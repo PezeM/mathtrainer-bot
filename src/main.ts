@@ -40,7 +40,10 @@ async function getMathEquationSymbols(page: Page) {
   const values = await page.evaluate(() => {
     const numbers = document.querySelector('.numbers');
     const divs = [...numbers.querySelectorAll('div')];
-    return divs.map((value) => parseInt(value.innerText));
+    return divs.map((value) => {
+      const text = value.innerText.trim().replace(/&nbsp;/g, '');
+      return parseInt(text);
+    });
   });
 
   const operator = await page.$eval(operatorSelector, (el) => el.innerHTML);
@@ -85,8 +88,8 @@ async function startNewGame(page: Page) {
   }
 
   const start = Date.now();
-  await wait(getRandomNumber(300, 500));
-  const mainPage = await isOnMainPage(page, 1500);
+  await wait(getRandomNumber(200, 700));
+  const mainPage = await isOnMainPage(page, 2000);
   if (mainPage) {
     console.log('Is on main page, finishing run');
     // Finished game, return from function
