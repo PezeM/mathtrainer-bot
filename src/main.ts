@@ -48,14 +48,36 @@ async function getMathEquationSymbols(page: Page) {
   return { values, operator };
 }
 
+async function collectStatistics(page: Page) {
+  const percentileSelector = '.percentile-overall-number';
+  const currentLevelSelector = '.metric-value-large';
+
+  await Promise.all([
+    page.waitForSelector(percentileSelector),
+    page.waitForSelector(currentLevelSelector),
+  ]);
+
+  const lastSubmissionPercentile = await page.$eval(percentileSelector, (el) =>
+    parseInt(el.innerHTML),
+  );
+
+  const currentLevel = await page.$eval(currentLevelSelector, (el) =>
+    parseInt(el.innerHTML),
+  );
+
+  console.log(
+    `Stats: level - ${currentLevel} percentile - ${lastSubmissionPercentile}%`,
+  );
+
+  return { currentLevel, lastSubmissionPercentile };
+}
+
 async function startNewGame(page: Page) {
   async function resolveMath() {
-    await wait(getRandomNumber(200, 350));
     const { values, operator } = await getMathEquationSymbols(page);
     const result = solveMathEquation(operator, values);
 
     console.log('result', result);
-    await wait(getRandomNumber(200, 350));
     await page.keyboard.type(result.toString());
     await startNewGame(page);
   }
@@ -63,12 +85,11 @@ async function startNewGame(page: Page) {
   await wait(getRandomNumber(100, 500));
   const mainPage = await isOnMainPage(page);
   if (mainPage) {
-    console.log("Is on main page, finishing run");
+    console.log('Is on main page, finishing run');
     // Finished game, return from function
     return;
   }
 
-  // Resolve math equation
   await resolveMath();
 }
 
@@ -78,8 +99,9 @@ async function start(page: Page) {
     console.log(`Started ${tries} try`);
     await clickStartGameButton(page);
     await startNewGame(page);
-    tries++;
+    await collectStatistics(page);
     console.log(`Completed ${tries} try`);
+    tries++;
   }
 }
 
