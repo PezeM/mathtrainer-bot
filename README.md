@@ -9,7 +9,7 @@ This project is intended to be used with the latest Active LTS release of [Node.
 To clone the repository use the following commands:
 
 ```sh
-git clone https://github.com/jsynowiec/node-typescript-boilerplate
+git clone https://github.com/PezeM/mathtrainer-bot
 cd mathtrainer-bot
 npm install
 ```
@@ -25,4 +25,4 @@ npm install
 
 ## License
 
-Licensed under the APLv2. See the [LICENSE](https://github.com/jsynowiec/node-typescript-boilerplate/blob/main/LICENSE) file for details.
+Licensed under the APLv2. See the [LICENSE](https://github.com/PezeM/mathtrainer-bot/blob/main/LICENSE) file for details.

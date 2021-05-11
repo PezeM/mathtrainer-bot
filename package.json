@@ -1,7 +1,6 @@
 {
-  "name": "node-typescript-boilerplate",
+  "name": "mathtrainer-bot",
   "version": "0.0.0",
-  "description": "Minimalistic boilerplate to quick-start Node.js development in TypeScript.",
   "engines": {
     "node": ">= 14.16 <15"
   },
@@ -29,7 +28,7 @@
     "test": "jest --coverage",
     "test:watch": "jest --watch"
   },
-  "author": "Jakub Synowiec <github@jakubsynowiec.info>",
+  "author": "PezeM",
   "license": "Apache-2.0",
   "dependencies": {
     "tslib": "~2.2.0"
