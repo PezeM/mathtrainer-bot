@@ -86,7 +86,7 @@ async function startNewGame(page: Page) {
 
   const start = Date.now();
   await wait(getRandomNumber(300, 500));
-  const mainPage = await isOnMainPage(page, 1000);
+  const mainPage = await isOnMainPage(page, 1500);
   if (mainPage) {
     console.log('Is on main page, finishing run');
     // Finished game, return from function
@@ -95,7 +95,12 @@ async function startNewGame(page: Page) {
 
   console.log("After wait on main page", Date.now() - start);
 
-  await resolveMath();
+  try {
+    await resolveMath();
+  } catch (e) {
+    console.error(e);
+    return;
+  }
 }
 
 async function start(page: Page, browser: Browser) {
