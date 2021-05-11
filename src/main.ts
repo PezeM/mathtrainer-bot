@@ -1,32 +1,66 @@
 /**
  * Some predefined delays (in milliseconds).
  */
-export enum Delays {
-  Short = 500,
-  Medium = 2000,
-  Long = 5000,
+import puppeteer from 'puppeteer/lib/cjs/puppeteer/node-puppeteer-core';
+import { SITE_URL } from './globals';
+
+async function browser() {
+  const browser = await puppeteer.launch({ headless: false });
+  const page = await browser.newPage();
+  page.on('console', (msg) => {
+    console.log('Page log:', msg.text());
+  });
+
+  await page.goto(SITE_URL);
+
+  const selector = '.start.is-armed';
+  await page.waitForSelector(selector);
+  await page.click(selector);
+
+  const numbersSelector = '.numbers';
+  const operatorSelector = '.operator';
+
+  await Promise.all([
+    page.waitForSelector(numbersSelector),
+    page.waitForSelector(operatorSelector)
+  ]);
+
+  console.log('After waiting for selectors');
+
+  const values = await page.evaluate(() => {
+    const numbers = document.querySelector('.numbers');
+    const divs = [...numbers.querySelectorAll('div')];
+    return divs.map(value => value.innerText);
+  });
+
+  console.log('values', values);
+
+  const operator = await page.$eval(operatorSelector, el => el.innerHTML);
+  console.log('operator', operator);
+
+  const numberValues = values.map(v => parseInt(v));
+
+  let result = 0;
+  switch (operator) {
+    case '+':
+      result = numberValues[0] + numberValues[1];
+      break;
+    case '-':
+      result = numberValues[0] - numberValues[1];
+      break;
+    case '*':
+      result = numberValues[0] * numberValues[1];
+      break;
+    case '/':
+      result = numberValues[0] / numberValues[1];
+      break;
+    default:
+      console.log('Wrong operator', operator);
+      break;
+  }
+
+  console.log('result', result);
+  await page.keyboard.type(result.toString());
 }
 
-/**
- * Returns a Promise<string> that resolves after given time.
- *
- * @param {string} name - A name.
- * @param {number=} [delay=Delays.Medium] - Number of milliseconds to delay resolution of the Promise.
- * @returns {Promise<string>}
- */
-function delayedHello(
-  name: string,
-  delay: number = Delays.Medium,
-): Promise<string> {
-  return new Promise((resolve: (value?: string) => void) =>
-    setTimeout(() => resolve(`Hello, ${name}`), delay),
-  );
-}
-
-// Below are examples of using ESLint errors suppression
-// Here it is suppressing missing return type definitions for greeter function
-
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export async function greeter(name: string) {
-  return await delayedHello(name, Delays.Long);
-}
+browser();
