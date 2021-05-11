@@ -41,7 +41,7 @@ async function getMathEquationSymbols(page: Page) {
     const numbers = document.querySelector('.numbers');
     const divs = [...numbers.querySelectorAll('div')];
     return divs.map((value) => {
-      const text = value.innerText.trim().replace(/&nbsp;/g, '');
+      const text = value.innerHTML.trim().replace(/&nbsp;/g, '');
       return parseInt(text);
     });
   });
@@ -77,19 +77,19 @@ async function collectStatistics(page: Page) {
   return { currentLevel, lastSubmissionPercentile };
 }
 
-async function startNewGame(page: Page) {
+async function startNewGame(page: Page, tries = 1) {
   async function resolveMath() {
     const { values, operator } = await getMathEquationSymbols(page);
     const result = solveMathEquation(operator, values);
 
     console.log('result', result);
-    await page.keyboard.type(result.toString(), { delay: 10 });
-    await startNewGame(page);
+    await page.keyboard.type(result.toString(), { delay: 90 });
+    await startNewGame(page, tries);
   }
 
   const start = Date.now();
-  await wait(getRandomNumber(200, 700));
-  const mainPage = await isOnMainPage(page, 2000);
+  await wait(getRandomNumber(tries * 30, tries * 100));
+  const mainPage = await isOnMainPage(page, 1500);
   if (mainPage) {
     console.log('Is on main page, finishing run');
     // Finished game, return from function
@@ -111,7 +111,7 @@ async function start(page: Page, browser: Browser) {
   while (tries < 100) {
     console.log(`Started ${tries} try`);
     await clickStartGameButton(page);
-    await startNewGame(page);
+    await startNewGame(page, tries);
     await collectStatistics(page);
     console.log(`Completed ${tries} try`);
     tries++;
