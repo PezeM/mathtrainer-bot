@@ -83,7 +83,7 @@ async function startNewGame(page: Page, tries = 1) {
     const result = solveMathEquation(operator, values);
 
     console.log('result', result);
-    await page.keyboard.type(result.toString(), { delay: 90 });
+    await page.keyboard.type(result.toString(), { delay: 100 });
     await startNewGame(page, tries);
   }
 
