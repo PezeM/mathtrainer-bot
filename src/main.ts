@@ -1,7 +1,12 @@
 import * as puppeteer from 'puppeteer';
-import { SITE_URL, START_BUTTON_SELECTOR } from './globals';
+import {
+  BLOCKED_DOMAINS,
+  MINIMAL_ARGS,
+  SITE_URL,
+  START_BUTTON_SELECTOR,
+} from './globals';
 import { wait } from './helpers/time';
-import { Page } from 'puppeteer';
+import { Browser, Page } from 'puppeteer';
 import { solveMathEquation } from './math';
 import { getRandomNumber } from './helpers/math';
 
@@ -30,10 +35,7 @@ async function getMathEquationSymbols(page: Page) {
   const numbersSelector = '.numbers';
   const operatorSelector = '.operator';
 
-  await Promise.all([
-    page.waitForSelector(numbersSelector),
-    page.waitForSelector(operatorSelector),
-  ]);
+  await page.waitForSelector(numbersSelector);
 
   const values = await page.evaluate(() => {
     const numbers = document.querySelector('.numbers');
@@ -78,22 +80,25 @@ async function startNewGame(page: Page) {
     const result = solveMathEquation(operator, values);
 
     console.log('result', result);
-    await page.keyboard.type(result.toString());
+    await page.keyboard.type(result.toString(), { delay: 10 });
     await startNewGame(page);
   }
 
-  await wait(getRandomNumber(100, 500));
-  const mainPage = await isOnMainPage(page);
+  const start = Date.now();
+  await wait(getRandomNumber(300, 500));
+  const mainPage = await isOnMainPage(page, 1000);
   if (mainPage) {
     console.log('Is on main page, finishing run');
     // Finished game, return from function
     return;
   }
 
+  console.log("After wait on main page", Date.now() - start);
+
   await resolveMath();
 }
 
-async function start(page: Page) {
+async function start(page: Page, browser: Browser) {
   let tries = 1;
   while (tries < 100) {
     console.log(`Started ${tries} try`);
@@ -103,18 +108,33 @@ async function start(page: Page) {
     console.log(`Completed ${tries} try`);
     tries++;
   }
+
+  console.log('Closing browser');
+  await browser.close();
 }
 
 async function startBrowser() {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({
+    headless: false,
+    args: MINIMAL_ARGS,
+  });
   const page = await browser.newPage();
+
+  await page.setRequestInterception(true);
+  page.on('request', (request) => {
+    const url = request.url();
+    if (request.resourceType() === 'image') request.abort();
+    else if (BLOCKED_DOMAINS.some((d) => url.includes(d))) request.abort();
+    else request.continue();
+  });
+
   // page.on('console', (msg) => {
   //   console.log('Page log:', msg.text());
   // });
 
-  await page.goto(SITE_URL);
+  await page.goto(SITE_URL, { waitUntil: 'domcontentloaded' });
 
-  await start(page);
+  await start(page, browser);
 }
 
 startBrowser();
