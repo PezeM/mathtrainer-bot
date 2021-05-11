@@ -2,6 +2,7 @@ import * as puppeteer from 'puppeteer';
 import { SITE_URL } from './globals';
 import { wait } from './helpers/time';
 import { Page } from 'puppeteer';
+import { solveMathEquation } from './math';
 
 async function start(page: Page) {
   const selector = '.start.is-armed';
@@ -33,25 +34,7 @@ async function start(page: Page) {
     console.log('operator', operator);
 
     const numberValues = values.map((v) => parseInt(v));
-
-    let result = 0;
-    switch (operator) {
-      case '+':
-        result = numberValues[0] + numberValues[1];
-        break;
-      case '-':
-        result = numberValues[0] - numberValues[1];
-        break;
-      case '*':
-        result = numberValues[0] * numberValues[1];
-        break;
-      case '/':
-        result = numberValues[0] / numberValues[1];
-        break;
-      default:
-        console.log('Wrong operator', operator);
-        break;
-    }
+    const result = solveMathEquation(operator, numberValues);
 
     console.log('result', result);
     await page.keyboard.type(result.toString());
