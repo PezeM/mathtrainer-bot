@@ -2,7 +2,7 @@
 
 ## Getting Started
 
-This project is intended to be used with the latest Active LTS release of [Node.js][nodejs].
+Command line application to solve https://www.mathtrainer.org/ equations;
 
 ### Clone repository
 
